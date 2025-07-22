@@ -18,6 +18,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 import static com.earth2me.essentials.I18n.tlLiteral;
 
@@ -177,5 +178,10 @@ public class LinkBukkitListener implements Listener {
                 throw new IllegalStateException();
             }
         }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerQuit(final PlayerQuitEvent event) {
+        ess.getLinkManager().unlinkAccount(event.getPlayer().getUniqueId());
     }
 }
