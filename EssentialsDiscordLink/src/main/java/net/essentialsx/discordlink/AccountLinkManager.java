@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class AccountLinkManager implements IEssentialsModule, DiscordLinkService {
-    private static final char[] CODE_CHARACTERS = "abcdefghijklmnopqrstuvwxyz0123456789".toCharArray();
+    private static final char[] CODE_CHARACTERS = "0123456789".toCharArray();
 
     private final EssentialsDiscordLink ess;
     private final AccountStorage storage;
@@ -149,10 +149,10 @@ public class AccountLinkManager implements IEssentialsModule, DiscordLinkService
     }
 
     private String generateCode() {
-        final char[] code = new char[8];
+        final char[] code = new char[4];
         final Random random = ThreadLocalRandom.current();
 
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 4; i++) {
             code[i] = CODE_CHARACTERS[random.nextInt(CODE_CHARACTERS.length)];
         }
         final String result = new String(code);
