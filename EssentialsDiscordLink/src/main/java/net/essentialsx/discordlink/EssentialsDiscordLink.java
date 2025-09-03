@@ -33,6 +33,7 @@ public class EssentialsDiscordLink extends JavaPlugin {
     private DiscordService api;
     private DiscordLinkSettings settings;
     private AccountStorage accounts;
+    private PlayerLinkStore playerLinkStore;
     private AccountLinkManager linkManager;
     private RoleSyncManager roleSyncManager;
 
@@ -54,6 +55,7 @@ public class EssentialsDiscordLink extends JavaPlugin {
         ess.addReloadListener(settings);
         try {
             accounts = new AccountStorage(this);
+            playerLinkStore = new PlayerLinkStore(this);
         } catch (IOException e) {
             getLogger().log(Level.SEVERE, "Unable to create link accounts file", e);
             setEnabled(false);
@@ -61,7 +63,7 @@ public class EssentialsDiscordLink extends JavaPlugin {
         }
 
         roleSyncManager = new RoleSyncManager(this);
-        linkManager = new AccountLinkManager(this, accounts, roleSyncManager);
+        linkManager = new AccountLinkManager(this, accounts, playerLinkStore, roleSyncManager);
 
         getServer().getPluginManager().registerEvents(new LinkBukkitListener(this), this);
         getServer().getServicesManager().register(DiscordLinkService.class, linkManager, this, ServicePriority.Normal);
@@ -91,6 +93,9 @@ public class EssentialsDiscordLink extends JavaPlugin {
         if (accounts != null) {
             accounts.shutdown();
         }
+        if (playerLinkStore != null) {
+            playerLinkStore.shutdown();
+        }
     }
 
     public void onReload() {
@@ -113,6 +118,10 @@ public class EssentialsDiscordLink extends JavaPlugin {
 
     public AccountStorage getAccountStorage() {
         return accounts;
+    }
+
+    public PlayerLinkStore getPlayerLinkStore() {
+        return playerLinkStore;
     }
 
     public AccountLinkManager getLinkManager() {

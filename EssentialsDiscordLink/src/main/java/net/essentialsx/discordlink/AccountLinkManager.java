@@ -21,14 +21,20 @@ public class AccountLinkManager implements IEssentialsModule, DiscordLinkService
 
     private final EssentialsDiscordLink ess;
     private final AccountStorage storage;
+    private final PlayerLinkStore playerLinkStore;
     private final RoleSyncManager roleSyncManager;
 
     private final Map<String, UUID> codeToUuidMap = new ConcurrentHashMap<>();
 
-    public AccountLinkManager(EssentialsDiscordLink ess, AccountStorage storage, RoleSyncManager roleSyncManager) {
+    public AccountLinkManager(EssentialsDiscordLink ess, AccountStorage storage, PlayerLinkStore playerLinkStore, RoleSyncManager roleSyncManager) {
         this.ess = ess;
         this.storage = storage;
+        this.playerLinkStore = playerLinkStore;
         this.roleSyncManager = roleSyncManager;
+    }
+
+    public java.util.logging.Logger getLogger() {
+        return ess.getLogger();
     }
 
     public String createCode(final UUID uuid) throws IllegalArgumentException {
@@ -119,12 +125,21 @@ public class AccountLinkManager implements IEssentialsModule, DiscordLinkService
             return false;
         }
 
+        final String existingDiscordId = playerLinkStore.getDiscordId(uuid);
+        if (existingDiscordId != null && !existingDiscordId.equals(member.getId())) {
+            return false;
+        }
+
         registerAccount(uuid, member, DiscordLinkStatusChangeEvent.Cause.SYNC_API);
         return true;
     }
 
     public void registerAccount(final UUID uuid, final InteractionMember member, final DiscordLinkStatusChangeEvent.Cause cause) {
         storage.add(uuid, member.getId());
+        if (playerLinkStore.getDiscordId(uuid) == null) {
+            playerLinkStore.add(uuid, member.getId());
+        }
+        ess.getLogger().log(java.util.logging.Level.INFO, "Account " + uuid + " registered with discord account " + member.getId() + ".");
         ensureAsync(() -> roleSyncManager.sync(uuid, member.getId()));
         ensureAsync(() -> {
             final IUser user = ess.getEss().getUser(uuid);
@@ -162,6 +177,16 @@ public class AccountLinkManager implements IEssentialsModule, DiscordLinkService
             return generateCode();
         }
         return result;
+    }
+
+    @Override
+    public boolean isLinked(UUID uuid) {
+        return storage.getDiscordId(uuid) != null;
+    }
+
+    @Override
+    public boolean isLinked(String discordId) {
+        return storage.getUUID(discordId) != null;
     }
 
     @Override
