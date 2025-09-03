@@ -32,6 +32,13 @@ public class LinkInteractionCommand implements InteractionCommand {
         final UUID uuid = accounts.getPendingUUID(event.getStringArgument("code"));
         if (uuid == null) {
             event.replyTl("discordCommandLinkInvalidCode");
+            accounts.getLogger().log(java.util.logging.Level.INFO, "Invalid link code used.");
+            return;
+        }
+
+        if (accounts.isLinked(uuid)) {
+            event.replyTl("discordCommandLinkAlreadyLinked");
+            accounts.getLogger().log(java.util.logging.Level.INFO, "Player " + uuid + " is already linked to a discord account.");
             return;
         }
 
