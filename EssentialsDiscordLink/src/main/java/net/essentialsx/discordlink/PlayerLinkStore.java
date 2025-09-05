@@ -74,6 +74,12 @@ public class PlayerLinkStore {
         return uuidToDiscordIdMap.get(uuid.toString());
     }
 
+    public void remove(final UUID uuid) {
+        uuidToDiscordIdMap.remove(uuid.toString());
+        plugin.getLogger().log(java.util.logging.Level.INFO, "Removed player link for " + uuid.toString());
+        queueSave();
+    }
+
     public void queueSave() {
         mapDirty.set(true);
     }
