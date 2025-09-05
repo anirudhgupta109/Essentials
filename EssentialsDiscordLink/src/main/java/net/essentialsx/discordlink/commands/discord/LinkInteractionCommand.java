@@ -42,7 +42,13 @@ public class LinkInteractionCommand implements InteractionCommand {
             return;
         }
 
-        accounts.registerAccount(uuid, event.getMember(), DiscordLinkStatusChangeEvent.Cause.SYNC_PLAYER);
+        try {
+            accounts.registerAccount(uuid, event.getMember(), DiscordLinkStatusChangeEvent.Cause.SYNC_PLAYER);
+        } catch (final RuntimeException e) {
+            event.replyTl("discordCommandLinkAlreadyLinked");
+            accounts.getLogger().log(java.util.logging.Level.INFO, "Player " + uuid + " is already linked to a discord account.");
+            return;
+        }
         event.replyTl("discordCommandLinkLinked");
     }
 

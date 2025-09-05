@@ -135,6 +135,11 @@ public class AccountLinkManager implements IEssentialsModule, DiscordLinkService
     }
 
     public void registerAccount(final UUID uuid, final InteractionMember member, final DiscordLinkStatusChangeEvent.Cause cause) {
+        final String existingDiscordId = playerLinkStore.getDiscordId(uuid);
+        if (existingDiscordId != null && !existingDiscordId.equals(member.getId())) {
+            throw new RuntimeException("Account is already linked to another user!");
+        }
+
         storage.add(uuid, member.getId());
         if (playerLinkStore.getDiscordId(uuid) == null) {
             playerLinkStore.add(uuid, member.getId());
