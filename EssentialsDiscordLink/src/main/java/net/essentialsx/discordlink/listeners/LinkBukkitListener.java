@@ -121,6 +121,12 @@ public class LinkBukkitListener implements Listener {
 
         if (!ess.getLinkManager().isLinked(event.getUser().getBase().getUniqueId())) {
             event.getUser().setFreeze(true);
+            final Runnable gameModeTask = () -> event.getUser().getBase().setGameMode(org.bukkit.GameMode.SPECTATOR);
+            if (Bukkit.isPrimaryThread()) {
+                gameModeTask.run();
+            } else {
+                ess.getEss().scheduleSyncDelayedTask(gameModeTask);
+            }
             String code;
             try {
                 code = ess.getLinkManager().createCode(event.getUser().getBase().getUniqueId());
@@ -143,6 +149,7 @@ public class LinkBukkitListener implements Listener {
         if (event.isLinked() || ess.getSettings().getLinkPolicy() == DiscordLinkSettings.LinkPolicy.NONE) {
             if (event.getUser() != null) {
                 event.getUser().setFreeze(false);
+                event.getUser().getBase().setGameMode(org.bukkit.GameMode.SURVIVAL);
             }
             return;
         }
