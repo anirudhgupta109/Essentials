@@ -98,6 +98,12 @@ public class AccountLinkManager implements IEssentialsModule, DiscordLinkService
             playerLinkStore.remove(uuid);
             ensureAsync(() -> {
                 final IUser user = ess.getEss().getUser(uuid);
+                if (user != null && user.getBase().isOnline()) {
+                    ensureSync(() -> {
+                        user.getBase().setGameMode(org.bukkit.GameMode.SPECTATOR);
+                        user.setFreeze(true);
+                    });
+                }
                 ensureSync(() -> ess.getServer().getPluginManager().callEvent(new DiscordLinkStatusChangeEvent(user, member, member.getId(), false, cause)));
 
                 roleSyncManager.unSync(uuid, member.getId());
@@ -135,6 +141,12 @@ public class AccountLinkManager implements IEssentialsModule, DiscordLinkService
         final String id = getDiscordId(user.getBase().getUniqueId());
         if (storage.remove(user.getBase().getUniqueId())) {
             playerLinkStore.remove(user.getBase().getUniqueId());
+            if (user != null && user.getBase().isOnline()) {
+                ensureSync(() -> {
+                    user.getBase().setGameMode(org.bukkit.GameMode.SPECTATOR);
+                    user.setFreeze(true);
+                });
+            }
             ess.getApi().getMemberById(id).thenAccept(member -> ensureSync(() ->
                     ess.getServer().getPluginManager().callEvent(new DiscordLinkStatusChangeEvent(user, member, id, false, cause))));
 
@@ -227,3 +239,4 @@ public class AccountLinkManager implements IEssentialsModule, DiscordLinkService
         return Collections.unmodifiableMap(storage.getRawStorageMap());
     }
 }
+
