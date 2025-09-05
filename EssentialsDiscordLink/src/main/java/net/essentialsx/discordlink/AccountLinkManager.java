@@ -92,6 +92,21 @@ public class AccountLinkManager implements IEssentialsModule, DiscordLinkService
         return false;
     }
 
+    public boolean removeFullAccount(final InteractionMember member, final DiscordLinkStatusChangeEvent.Cause cause) {
+        final UUID uuid = getUUID(member.getId());
+        if (storage.remove(member.getId())) {
+            playerLinkStore.remove(uuid);
+            ensureAsync(() -> {
+                final IUser user = ess.getEss().getUser(uuid);
+                ensureSync(() -> ess.getServer().getPluginManager().callEvent(new DiscordLinkStatusChangeEvent(user, member, member.getId(), false, cause)));
+
+                roleSyncManager.unSync(uuid, member.getId());
+            });
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public boolean unlinkAccount(UUID uuid) {
         Preconditions.checkNotNull(uuid, "uuid cannot be null");
@@ -107,6 +122,19 @@ public class AccountLinkManager implements IEssentialsModule, DiscordLinkService
     public boolean removeAccount(final IUser user, final DiscordLinkStatusChangeEvent.Cause cause) {
         final String id = getDiscordId(user.getBase().getUniqueId());
         if (storage.remove(user.getBase().getUniqueId())) {
+            ess.getApi().getMemberById(id).thenAccept(member -> ensureSync(() ->
+                    ess.getServer().getPluginManager().callEvent(new DiscordLinkStatusChangeEvent(user, member, id, false, cause))));
+
+            ensureAsync(() -> roleSyncManager.unSync(user.getBase().getUniqueId(), id));
+            return true;
+        }
+        return false;
+    }
+
+    public boolean removeFullAccount(final IUser user, final DiscordLinkStatusChangeEvent.Cause cause) {
+        final String id = getDiscordId(user.getBase().getUniqueId());
+        if (storage.remove(user.getBase().getUniqueId())) {
+            playerLinkStore.remove(user.getBase().getUniqueId());
             ess.getApi().getMemberById(id).thenAccept(member -> ensureSync(() ->
                     ess.getServer().getPluginManager().callEvent(new DiscordLinkStatusChangeEvent(user, member, id, false, cause))));
 
