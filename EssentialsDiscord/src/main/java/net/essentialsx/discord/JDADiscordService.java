@@ -202,7 +202,7 @@ public class JDADiscordService implements DiscordService, IEssentialsModule {
             throw new IllegalArgumentException(tlLiteral("discordErrorNoGuild"));
         }
 
-        final Collection<Permission> requiredPermissions = ImmutableList.of(Permission.MANAGE_WEBHOOKS, Permission.MANAGE_ROLES, Permission.NICKNAME_MANAGE, Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND, Permission.MESSAGE_EMBED_LINKS);
+        final Collection<Permission> requiredPermissions = ImmutableList.of(Permission.MANAGE_WEBHOOKS, Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND, Permission.MESSAGE_EMBED_LINKS);
         final String[] missingPermissions = requiredPermissions.stream()
                 .filter(permission -> !guild.getSelfMember().hasPermission(permission))
                 .map(Permission::getName)
