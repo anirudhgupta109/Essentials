@@ -53,7 +53,7 @@ public class PermissionsHandler implements IPermissionsHandler {
         final List<String> groups = new ArrayList<>();
         groups.add(defaultGroup);
         final List<String> handlerGroups = handler.getGroups(base);
-        if (handlerGroups != null) {
+        if (handlerGroups != null && !handlerGroups.isEmpty()) {
             groups.addAll(handlerGroups);
         }
         checkPermLag(start, String.format("Getting groups for %s", base.getName()));
@@ -103,6 +103,16 @@ public class PermissionsHandler implements IPermissionsHandler {
     @Override
     public boolean hasPermission(final Player base, final String node) {
         return handler.hasPermission(base, node);
+    }
+
+    @Override
+    public boolean hasPermissionCached(final Player base, final String node) {
+        return handler.hasPermissionCached(base, node);
+    }
+
+    @Override
+    public void invalidatePermissionCache(final UUID uuid) {
+        handler.invalidatePermissionCache(uuid);
     }
 
     @Override
